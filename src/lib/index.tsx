@@ -1150,9 +1150,10 @@ export const useFrappeDocumentEventListener = (
         socket?.emit('doc_subscribe', doctype, docname)
 
         // Re-subscribe on reconnect
-        socket?.io.on("reconnect", () => {
+        const onReconnect = () => {
             socket?.emit('doc_subscribe', doctype, docname)
-        })
+        }
+        socket?.io.on("reconnect", onReconnect)
 
         if (emitOpenCloseEventsOnMount) {
             socket?.emit('doc_open', doctype, docname)
@@ -1160,6 +1161,7 @@ export const useFrappeDocumentEventListener = (
 
         return () => {
             socket?.emit('doc_unsubscribe', doctype, docname)
+            socket?.io.off("reconnect", onReconnect)
             if (emitOpenCloseEventsOnMount) {
                 socket?.emit('doc_close', doctype, docname)
             }
@@ -1230,11 +1232,13 @@ export const useFrappeDocTypeEventListener = (
         socket?.emit('doctype_subscribe', doctype)
 
         // Re-subscribe on reconnect
-        socket?.io.on("reconnect", () => {
+        const onReconnect = () => {
             socket?.emit('doctype_subscribe', doctype)
-        })
+        }
+        socket?.io.on("reconnect", onReconnect)
         return () => {
             socket?.emit('doctype_unsubscribe', doctype)
+            socket?.io.off("reconnect", onReconnect)
         }
     }, [doctype]);
 
